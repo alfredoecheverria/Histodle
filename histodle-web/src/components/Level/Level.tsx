@@ -280,8 +280,9 @@ const Level: React.FC<LevelProps> = ({ practiceMode = false, dailyMode = false }
             won && finalScore !== null ? ` Puntaje: ${finalScore}.` : '';
         const text = `Histodle - ${modeName}: ${
             won ? '¡Adiviné!' : gaveUp ? 'Me rendí.' : 'No lo adiviné.'
-        } Personaje: ${targetCharacter.name}. Intentos: ${attempts}/${MAX_ATTEMPTS}.${scoreText}`;
-        const url = window.location.href;
+        } Intentos: ${attempts}/${MAX_ATTEMPTS}.${scoreText} 
+        ¿Te animás a adivinar el personaje misterioso? Jugá en:`;
+        const url = window.location.origin;
 
         try {
             if (typeof navigator.share === 'function') {
@@ -540,7 +541,7 @@ const Level: React.FC<LevelProps> = ({ practiceMode = false, dailyMode = false }
                             : finalScore !== null
                                 ? ` Tu puntaje obtenido es de ${finalScore} puntos`
                                 : resultSubmissionError
-                                    ? 'No se pudo guardar el resultado.'
+                                    ? ' No se pudo guardar el resultado porque no estás registrado.'
                                     : 'No se pudo calcular el puntaje.'}
                     </p>
                     {!practiceMode && resultCounted === true && (
@@ -551,9 +552,9 @@ const Level: React.FC<LevelProps> = ({ practiceMode = false, dailyMode = false }
                     )}
                     {resultSubmissionError && (
                         <div>
-                            <p role="alert">No se pudo guardar el resultado: {resultSubmissionError}</p>
                             {pendingChallengeResult && (
                                 <button
+                                    className="retry-button"
                                     type="button"
                                     onClick={() => void saveChallengeResult(pendingChallengeResult)}
                                     disabled={scoreLoading}

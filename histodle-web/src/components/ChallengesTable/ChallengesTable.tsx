@@ -122,22 +122,24 @@ const ChallengesTable: React.FC = () => {
                         <article className="challenge-admin-card" key={challenge.id}>
                             <div className="challenge-admin-card-header">
                                 <h2 className="challenge-admin-name">{challenge.name}</h2>
-                                <button
-                                    type="button"
-                                    className="challenge-edit-button"
-                                    onClick={() => navigate(`/admin/challenges/edit/${challenge.id}`)}
-                                    aria-label={`Modificar ${challenge.name}`}
-                                >
-                                    Modificar
-                                </button>
-                                <button
-                                    type="button"
-                                    className="challenge-delete-button"
-                                    onClick={() => handleDelete(challenge)}
-                                    aria-label={`Eliminar ${challenge.name}`}
-                                >
-                                    Eliminar
-                                </button>
+                                <div className="challenge-admin-card-actions">
+                                    <button
+                                        type="button"
+                                        className="challenge-edit-button"
+                                        onClick={() => navigate(`/admin/challenges/edit/${challenge.id}`)}
+                                        aria-label={`Modificar ${challenge.name}`}
+                                    >
+                                        Modificar
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="challenge-delete-button"
+                                        onClick={() => handleDelete(challenge)}
+                                        aria-label={`Eliminar ${challenge.name}`}
+                                    >
+                                        Eliminar
+                                    </button>
+                                </div>
                             </div>
                             <p className="challenge-card-description">{challenge.description}</p>
                             <div className="challenge-admin-details">

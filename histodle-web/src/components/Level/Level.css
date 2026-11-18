@@ -1135,3 +1135,6 @@ main > section:has(> form) > table tbody td.guess-value.mismatch::before {
     opacity: 0.75;
 }
 
+.retry.button {
+    font-size: 1rem;
+}
