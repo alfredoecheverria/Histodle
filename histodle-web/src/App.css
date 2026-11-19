@@ -1,8 +1,26 @@
-* {
-    background-color: #0b080d;
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    min-width: 0;
+}
+
+body {
+    min-width: 0;
+}
+
+img,
+svg,
+canvas,
+video {
+    max-width: 100%;
 }
 
 main {
     position: relative;
     z-index: 1;
+    width: 100%;
 }

@@ -17,6 +17,37 @@ main {
     border-radius: 20px;
 }
 
+.level-page {
+    display: flex;
+    flex-direction: column;
+}
+
+.level-page .guess-form {
+    order: 3;
+}
+
+.level-page .game-layout {
+    order: 5;
+}
+
+.level-page .legend-row {
+    order: 4;
+    justify-content: center;
+    flex-wrap: nowrap;
+    width: 100%;
+    margin-inline: auto;
+    text-align: center;
+}
+
+.level-page .legend-item {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+.level-page .info-card {
+    order: 6;
+}
+
 html, body, #root {
     margin: 0;
     min-height: 100%;
@@ -943,6 +974,16 @@ main > section:has(> form) > table tbody td.guess-value.mismatch::before {
     position: relative;
 }
 
+.level-page > form.guess-form {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    width: 100%;
+    margin: 0 auto 1.25rem;
+    padding: 1rem;
+}
+
 .search-container {
     position: relative;
     width: 100%;
@@ -1047,6 +1088,24 @@ main > section:has(> form) > table tbody td.guess-value.mismatch::before {
     margin-bottom: 0.7rem;
 }
 
+.level-page .guess-form-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: min(100%, 32rem);
+    margin: 0 auto;
+}
+
+.level-page .guess-form-actions > button {
+    width: 100%;
+    min-width: 0;
+}
+
+.level-page .guess-form-actions .hint-circle-button {
+    height: 3.4rem;
+    min-height: 3.4rem;
+    border-radius: 0.8rem;
+}
+
 .hint-circle-button {
     width: 50px;
     height: 35px;
@@ -1137,4 +1196,122 @@ main > section:has(> form) > table tbody td.guess-value.mismatch::before {
 
 .retry.button {
     font-size: 1rem;
+}
+
+@media (max-width: 760px) {
+    .level-page {
+        padding: 1.25rem 1rem;
+    }
+
+    .level-header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .level-header h1 {
+        font-size: clamp(2.25rem, 12vw, 3.25rem);
+    }
+
+    .attempts-container {
+        align-items: flex-start;
+    }
+
+    .game-layout {
+        flex-direction: column;
+        gap: 1.25rem;
+    }
+
+    .attempts-column,
+    .results-column {
+        width: 100%;
+    }
+
+    .results-column {
+        flex: 0 0 auto;
+        align-items: center;
+    }
+
+    .results-panel {
+        width: min(100%, 32rem);
+        align-items: center;
+    }
+
+    .results-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+        justify-items: center;
+        width: 100%;
+    }
+
+    .attempt-fields-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .field-box {
+        width: 100%;
+    }
+
+    .guess-search-row {
+        grid-template-columns: 3rem minmax(0, 1fr);
+    }
+
+    .level-page form input#character-guess {
+        height: 64px;
+        padding: 0 16px 0 52px;
+        background-position: 16px center;
+    }
+
+    .level-page > form.guess-form {
+        align-items: center;
+    }
+
+    .guess-search-row {
+        width: min(100%, 32rem);
+    }
+
+    .level-page .guess-form-actions {
+        width: min(100%, 32rem);
+    }
+
+    .level-page .legend-row {
+        flex-wrap: wrap;
+        gap: 0.75rem 1rem;
+    }
+
+    .revealed-hints-header,
+    .hint-card {
+        padding-inline: 1rem;
+    }
+}
+
+@media (max-width: 420px) {
+    .attempt-fields-grid,
+    .revealed-character-grid,
+    .attempt-fields-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .attempt-card {
+        padding: 1rem;
+    }
+
+    .attempt-card-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .occupations-pills {
+        flex-wrap: wrap;
+    }
+
+    .results-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .button-play-again {
+        width: 100%;
+        min-width: 0;
+    }
 }

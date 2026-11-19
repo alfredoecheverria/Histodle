@@ -714,7 +714,7 @@ const Level: React.FC<LevelProps> = ({ practiceMode = false, dailyMode = false }
                             onFocus={() => setShowSuggestions(true)}
                             autoComplete="off"
                             disabled={gameFinished}
-                            placeholder="Buscar personaje..."
+                            placeholder="Adivina el personaje..."
                         />
 
                         {showSuggestions && guessName.trim() !== '' && (
