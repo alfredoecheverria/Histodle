@@ -1,4 +1,10 @@
-import { Fragment, useEffect, useState, type SubmitEvent } from 'react';
+import {
+    Fragment,
+    useEffect,
+    useState,
+    type KeyboardEvent as ReactKeyboardEvent,
+    type SubmitEvent,
+} from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { sileo } from 'sileo';
 
@@ -114,6 +120,68 @@ const Level: React.FC<LevelProps> = ({ practiceMode = false, dailyMode = false }
     const [resultSubmissionError, setResultSubmissionError] = useState<string | null>(null);
     const [pendingChallengeResult, setPendingChallengeResult] = useState<ChallengeResultInput | null>(null);
     const [ showSuggestions, setShowSuggestions ] = useState(false);
+    const [activeSuggestionIndex, setActiveSuggestionIndex] = useState<number | null>(null);
+    const matchingCharacters = guessName.trim()
+        ? characters
+            .filter((character) =>
+                normalizeName(character.name).includes(normalizeName(guessName))
+            )
+            .slice(0, 4)
+        : [];
+    const isSuggestionsOpen = showSuggestions && guessName.trim() !== '';
+    const activeSuggestion =
+        activeSuggestionIndex === null
+            ? undefined
+            : matchingCharacters[activeSuggestionIndex];
+    const suggestionAnnouncement = isSuggestionsOpen
+        ? matchingCharacters.length === 0
+            ? 'No se encontraron personajes.'
+            : `${matchingCharacters.length} ${
+                matchingCharacters.length === 1 ? 'sugerencia disponible' : 'sugerencias disponibles'
+            }.`
+        : '';
+
+    const selectSuggestion = (character: Character) => {
+        setGuessName(character.name);
+        setShowSuggestions(false);
+        setActiveSuggestionIndex(null);
+    };
+
+    const handleGuessKeyDown = (event: ReactKeyboardEvent<HTMLInputElement>) => {
+        if (event.key === 'ArrowDown' && matchingCharacters.length > 0) {
+            event.preventDefault();
+            setShowSuggestions(true);
+            setActiveSuggestionIndex((currentIndex) =>
+                currentIndex === null
+                    ? 0
+                    : (currentIndex + 1) % matchingCharacters.length,
+            );
+            return;
+        }
+
+        if (event.key === 'ArrowUp' && matchingCharacters.length > 0) {
+            event.preventDefault();
+            setShowSuggestions(true);
+            setActiveSuggestionIndex((currentIndex) =>
+                currentIndex === null
+                    ? matchingCharacters.length - 1
+                    : (currentIndex - 1 + matchingCharacters.length) % matchingCharacters.length,
+            );
+            return;
+        }
+
+        if (event.key === 'Enter' && isSuggestionsOpen && activeSuggestion) {
+            event.preventDefault();
+            selectSuggestion(activeSuggestion);
+            return;
+        }
+
+        if (event.key === 'Escape' && isSuggestionsOpen) {
+            event.preventDefault();
+            setShowSuggestions(false);
+            setActiveSuggestionIndex(null);
+        }
+    };
 
     const startNextPractice = () => {
         const nextCharacters = targetCandidates.filter(
@@ -704,58 +772,97 @@ const Level: React.FC<LevelProps> = ({ practiceMode = false, dailyMode = false }
                     </button>
 
                     <div className="search-container">
+                        <label
+                            className="visually-hidden"
+                            htmlFor="character-guess"
+                        >
+                            Adivina el personaje histórico
+                        </label>
                         <input
                             id="character-guess"
+                            role="combobox"
                             value={guessName}
                             onChange={(event) => {
                                 setGuessName(event.target.value);
                                 setShowSuggestions(true);
+                                setActiveSuggestionIndex(null);
                             }}
-                            onFocus={() => setShowSuggestions(true)}
+                            onFocus={() => {
+                                if (guessName.trim()) setShowSuggestions(true);
+                            }}
+                            onKeyDown={handleGuessKeyDown}
                             autoComplete="off"
                             disabled={gameFinished}
                             placeholder="Adivina el personaje..."
+                            aria-autocomplete="list"
+                            aria-expanded={isSuggestionsOpen}
+                            aria-controls={
+                                isSuggestionsOpen && matchingCharacters.length > 0
+                                    ? 'character-suggestions'
+                                    : undefined
+                            }
+                            aria-activedescendant={
+                                isSuggestionsOpen && activeSuggestion
+                                    ? `character-suggestion-${activeSuggestion.id}`
+                                    : undefined
+                            }
+                            aria-describedby="character-guess-instructions"
                         />
 
-                        {showSuggestions && guessName.trim() !== '' && (
+                        <span
+                            className="visually-hidden"
+                            id="character-guess-instructions"
+                        >
+                            Escribe para buscar. Usa las flechas arriba y abajo para recorrer
+                            las sugerencias, Enter para elegir y Escape para cerrarlas.
+                        </span>
+                        <span
+                            className="visually-hidden"
+                            role="status"
+                            aria-live="polite"
+                            aria-atomic="true"
+                        >
+                            {suggestionAnnouncement}
+                        </span>
+
+                        {isSuggestionsOpen && (
                             <div className="suggestions-dropdown">
-                                {characters
-                                    .filter((character) =>
-                                        normalizeName(character.name).includes(
-                                            normalizeName(guessName)
-                                        )
-                                    )
-                                    .slice(0, 4)
-                                    .map((character) => (
-                                        <button
-                                            key={character.id}
-                                            type="button"
-                                            className="suggestion-item"
-                                            onMouseDown={(event) => event.preventDefault()}
-                                            onClick={() => {
-                                                setGuessName(character.name);
-                                                setShowSuggestions(false);
-                                            }}
-                                        >
-                                            <span className="suggestion-name">
-                                                {character.name}
-                                            </span>
+                                {matchingCharacters.length > 0 ? (
+                                    <div
+                                        id="character-suggestions"
+                                        role="listbox"
+                                        aria-label="Personajes sugeridos"
+                                    >
+                                        {matchingCharacters.map((character, index) => {
+                                            const isActive = index === activeSuggestionIndex;
 
-                                            <span className="suggestion-years">
-                                                {character.birthYear} – {
-                                                    character.yearOfDeath === 0
-                                                        ? 'Actualidad'
-                                                        : character.yearOfDeath
-                                                }
-                                            </span>
-                                        </button>
-                                    ))}
+                                            return (
+                                                <div
+                                                    key={character.id}
+                                                    id={`character-suggestion-${character.id}`}
+                                                    role="option"
+                                                    aria-selected={isActive}
+                                                    className={`suggestion-item ${isActive ? 'is-active' : ''}`}
+                                                    onMouseDown={(event) => event.preventDefault()}
+                                                    onMouseEnter={() => setActiveSuggestionIndex(index)}
+                                                    onClick={() => selectSuggestion(character)}
+                                                >
+                                                    <span className="suggestion-name">
+                                                        {character.name}
+                                                    </span>
 
-                                {characters.filter((character) =>
-                                    normalizeName(character.name).includes(
-                                        normalizeName(guessName)
-                                    )
-                                ).length === 0 && (
+                                                    <span className="suggestion-years">
+                                                        {character.birthYear} – {
+                                                            character.yearOfDeath === 0
+                                                                ? 'Actualidad'
+                                                                : character.yearOfDeath
+                                                        }
+                                                    </span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                ) : (
                                     <p className="no-suggestions">
                                         No se encontraron personajes.
                                     </p>
