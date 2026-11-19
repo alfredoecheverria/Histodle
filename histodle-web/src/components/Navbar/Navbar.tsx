@@ -53,10 +53,10 @@ const Navbar: React.FC = () => {
 
     return (
         <header className="navbar-container">
-            <div className="titulo" aria-label="Histodle logo">
+            <NavLink className="titulo" to="/jugar" aria-label="Ir al inicio de Histodle">
                 <img className="brand-logo" src={logo} alt="" />
                 <span className="brand-text">Histodle</span>
-            </div>
+            </NavLink>
             <nav className="navbar-links">
                 {navLinks.map((link) => (
                     <NavLink
