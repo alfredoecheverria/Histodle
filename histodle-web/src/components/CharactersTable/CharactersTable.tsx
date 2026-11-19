@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Character } from '../../types/character';
 import { sileo } from 'sileo';
@@ -22,12 +22,14 @@ const CharactersTable: React.FC<CharactersTableProps> = ({
     const navigate = useNavigate();
     const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const [activeSuggestionIndex, setActiveSuggestionIndex] = useState<number | null>(null);
     const [actionError, setActionError] = useState<string | null>(null);
 
     const normalizeSearchText = (value: string) =>
         value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase();
     const normalizedSearchTerm = normalizeSearchText(searchTerm.trim());
-    const filteredCharacters = characters.filter((character) => {
+    const getSearchableText = (character: Character) => {
         const searchableText = [
             character.name,
             character.country,
@@ -36,8 +38,68 @@ const CharactersTable: React.FC<CharactersTableProps> = ({
             ...(character.occupations ?? []).map((occupation) => occupation.name),
         ].join(' ');
 
-        return normalizeSearchText(searchableText).includes(normalizedSearchTerm);
-    });
+        return normalizeSearchText(searchableText);
+    };
+    const matchesSearch = (character: Character) =>
+        getSearchableText(character).includes(normalizedSearchTerm);
+    const filteredCharacters = characters.filter(matchesSearch);
+    const searchSuggestions = normalizedSearchTerm
+        ? filteredCharacters.slice(0, 4)
+        : [];
+    const isSuggestionsOpen = showSuggestions && normalizedSearchTerm !== '';
+    const activeSuggestion =
+        activeSuggestionIndex === null
+            ? undefined
+            : searchSuggestions[activeSuggestionIndex];
+    const suggestionAnnouncement = isSuggestionsOpen
+        ? searchSuggestions.length === 0
+            ? 'No se encontraron personajes.'
+            : `${searchSuggestions.length} ${
+                searchSuggestions.length === 1 ? 'sugerencia disponible' : 'sugerencias disponibles'
+            }.`
+        : '';
+
+    const selectSearchSuggestion = (character: Character) => {
+        setSearchTerm(character.name);
+        setShowSuggestions(false);
+        setActiveSuggestionIndex(null);
+    };
+
+    const handleSearchKeyDown = (event: ReactKeyboardEvent<HTMLInputElement>) => {
+        if (event.key === 'ArrowDown' && searchSuggestions.length > 0) {
+            event.preventDefault();
+            setShowSuggestions(true);
+            setActiveSuggestionIndex((currentIndex) =>
+                currentIndex === null
+                    ? 0
+                    : (currentIndex + 1) % searchSuggestions.length,
+            );
+            return;
+        }
+
+        if (event.key === 'ArrowUp' && searchSuggestions.length > 0) {
+            event.preventDefault();
+            setShowSuggestions(true);
+            setActiveSuggestionIndex((currentIndex) =>
+                currentIndex === null
+                    ? searchSuggestions.length - 1
+                    : (currentIndex - 1 + searchSuggestions.length) % searchSuggestions.length,
+            );
+            return;
+        }
+
+        if (event.key === 'Enter' && isSuggestionsOpen && activeSuggestion) {
+            event.preventDefault();
+            selectSearchSuggestion(activeSuggestion);
+            return;
+        }
+
+        if (event.key === 'Escape' && isSuggestionsOpen) {
+            event.preventDefault();
+            setShowSuggestions(false);
+            setActiveSuggestionIndex(null);
+        }
+    };
 
     const handleSelect = (character: Character) => {
         setSelectedCharacter(character);
@@ -102,14 +164,97 @@ const CharactersTable: React.FC<CharactersTableProps> = ({
                 <circle cx="11" cy="11" r="8"></circle>
                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
+            <label className="visually-hidden" htmlFor="admin-character-search">
+                Buscar personajes por nombre, país, fechas u ocupación
+            </label>
             <input
+                id="admin-character-search"
                 type="text"
                 className="search-input"
                 placeholder="Buscar personaje..."
-                aria-label="Buscar personaje por nombre, país, años u ocupación"
+                role="combobox"
+                aria-autocomplete="list"
+                aria-expanded={isSuggestionsOpen}
+                aria-controls={
+                    isSuggestionsOpen && searchSuggestions.length > 0
+                        ? 'admin-character-suggestions'
+                        : undefined
+                }
+                aria-activedescendant={
+                    isSuggestionsOpen && activeSuggestion
+                        ? `admin-character-suggestion-${activeSuggestion.id}`
+                        : undefined
+                }
+                aria-describedby="admin-character-search-instructions"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(event) => {
+                    setSearchTerm(event.target.value);
+                    setShowSuggestions(true);
+                    setActiveSuggestionIndex(null);
+                }}
+                onFocus={() => {
+                    if (normalizedSearchTerm) setShowSuggestions(true);
+                }}
+                onKeyDown={handleSearchKeyDown}
             />
+            <span
+                className="visually-hidden"
+                id="admin-character-search-instructions"
+            >
+                Escribe para filtrar personajes. Usa las flechas arriba y abajo para recorrer
+                las sugerencias, Enter para elegir y Escape para cerrarlas.
+            </span>
+            <span
+                className="visually-hidden"
+                role="status"
+                aria-live="polite"
+                aria-atomic="true"
+            >
+                {suggestionAnnouncement}
+            </span>
+            {isSuggestionsOpen && (
+                <div className="character-search-suggestions">
+                    {searchSuggestions.length > 0 ? (
+                        <div
+                            id="admin-character-suggestions"
+                            role="listbox"
+                            aria-label="Personajes sugeridos"
+                        >
+                            {searchSuggestions.map((character, index) => {
+                                const isActive = index === activeSuggestionIndex;
+
+                                return (
+                                    <div
+                                        key={character.id}
+                                        id={`admin-character-suggestion-${character.id}`}
+                                        role="option"
+                                        aria-selected={isActive}
+                                        className={`character-search-suggestion ${isActive ? 'is-active' : ''}`}
+                                        onMouseDown={(event) => event.preventDefault()}
+                                        onMouseEnter={() => setActiveSuggestionIndex(index)}
+                                        onClick={() => selectSearchSuggestion(character)}
+                                    >
+                                        <span className="character-search-suggestion-name">
+                                            {character.name}
+                                        </span>
+                                        <span className="character-search-suggestion-meta">
+                                            {character.country} · {character.birthYear} – {
+                                                character.yearOfDeath === 0
+                                                    ? 'Actualidad'
+                                                    : character.yearOfDeath
+                                            }
+                                        </span>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <p className="character-search-no-suggestions">
+                            No se encontraron personajes.
+                        </p>
+                    )}
+                </div>
+            )}
             </div>
 
             <button
@@ -174,7 +319,10 @@ const CharactersTable: React.FC<CharactersTableProps> = ({
                 </button>
             </div>
             )) : (
-                <p className="empty-search-results" role="status">
+                <p
+                    className="empty-search-results"
+                    role={isSuggestionsOpen ? undefined : 'status'}
+                >
                     No se encontraron personajes para “{searchTerm}”.
                 </p>
             )}
