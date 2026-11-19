@@ -76,6 +76,25 @@
     gap: 2rem;
 }
 
+@media (max-width: 760px) {
+    .admin-container {
+        margin: 1.25rem auto;
+        padding: 1.25rem 1rem;
+    }
+
+    .tabs-container {
+        width: 100%;
+        overflow-x: auto;
+        border-radius: 1rem;
+    }
+
+    .tab-button {
+        flex: 0 0 auto;
+        padding: 0.6rem 1rem;
+        white-space: nowrap;
+    }
+}
+
 /*notificaciones*/
 
 [data-sileo-title] {

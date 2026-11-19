@@ -6,6 +6,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 1rem;
     padding: 1.15rem 2.2rem 1rem;
     background-color: rgb(0, 0, 0);
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -43,6 +44,8 @@
     position: relative;
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
+    justify-content: flex-end;
     gap: 0.7rem;
     background-color: #000;
 }
@@ -124,4 +127,49 @@
 .user-menu-item:focus-visible {
     background: rgba(172, 103, 211, 0.18);
     color: #ffffff;
+}
+
+@media (max-width: 760px) {
+    .navbar-container {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 0.85rem 1rem;
+    }
+
+    .brand-logo {
+        width: 2.15rem;
+        height: 2.15rem;
+    }
+
+    .brand-text {
+        font-size: 1.65rem;
+    }
+
+    .navbar-links {
+        width: 100%;
+        justify-content: flex-start;
+        flex-wrap: nowrap;
+        gap: 0.25rem;
+        overflow-x: auto;
+        padding-bottom: 0.15rem;
+        scrollbar-width: none;
+    }
+
+    .navbar-links::-webkit-scrollbar {
+        display: none;
+    }
+
+    .nav-item,
+    .user-menu-trigger {
+        flex: 0 0 auto;
+        padding: 0.55rem 0.75rem;
+        white-space: nowrap;
+    }
+
+    .user-menu-dropdown {
+        position: fixed;
+        top: 4.8rem;
+        right: 1rem;
+        max-width: calc(100vw - 2rem);
+    }
 }

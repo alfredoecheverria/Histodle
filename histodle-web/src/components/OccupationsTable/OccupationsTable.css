@@ -133,3 +133,28 @@
     color: #f87171;
 }
 
+@media (max-width: 760px) {
+    .occupations-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .create-occupation-bar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .btn-create-occupation {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .occupations-section {
+        padding-inline: 0;
+    }
+
+    .occupations-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
